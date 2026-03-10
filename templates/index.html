@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>AI-Based Home Gardening Assistant</title>
+<title>AI Home Gardening Assistant</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -13,25 +14,64 @@
 
 <form method="POST">
 
-<label>Select a Plant</label><br>
+<label>Select Plant</label><br><br>
 
 <select name="plant">
-<option>Tomato</option>
-<option>Mint</option>
-<option>Chili</option>
-<option>Coriander</option>
-<option>Spinach</option>
+<option value="Tomato">Tomato</option>
+<option value="Mint">Mint</option>
+<option value="Chili">Chili</option>
+<option value="Coriander">Coriander</option>
+<option value="Spinach">Spinach</option>
 </select>
 
-<br>
+<input type="hidden" name="index" value="0">
 
-<button type="submit">Generate Tips</button>
+<br><br>
+
+<button type="submit">Next Tip ➡</button>
 
 </form>
 
+
+{% if tip %}
+
 <div class="result">
-{{ result }}
+
+<h3>🌿 Tip</h3>
+
+<p>{{ tip }}</p>
+
+<div style="display:flex; justify-content:center; gap:20px;">
+
+<!-- Previous Tip -->
+<form method="POST">
+<input type="hidden" name="plant" value="{{ plant }}">
+<input type="hidden" name="index" value="{{ index-2 }}">
+<button type="submit">⬅ Previous</button>
+</form>
+
+<!-- Next Tip -->
+<form method="POST">
+<input type="hidden" name="plant" value="{{ plant }}">
+<input type="hidden" name="index" value="{{ index }}">
+<button type="submit">Next ➡</button>
+</form>
+
 </div>
+
+</div>
+
+{% endif %}
+
+
+{% if end %}
+
+<h3>✅ You have viewed all the basic gardening tips for this plant.</h3>
+
+<p>For more information visit:</p>
+<a href="{{ wiki }}" target="_blank">📚 Learn More on Wikipedia</a>
+
+{% endif %}
 
 </div>
 
