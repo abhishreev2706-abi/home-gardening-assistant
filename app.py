@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
+# Gardening tips
 tips = {
     "Tomato": [
         "Sunlight: Needs 6-8 hours of sunlight daily.",
@@ -10,7 +11,6 @@ tips = {
         "Fertilizer: Use compost or organic fertilizer.",
         "Harvest: Ready in 60-80 days."
     ],
-
     "Mint": [
         "Sunlight: Partial sunlight.",
         "Watering: Keep soil moist.",
@@ -18,7 +18,6 @@ tips = {
         "Fertilizer: Use organic compost.",
         "Harvest: Ready in 30-40 days."
     ],
-
     "Chili": [
         "Sunlight: Needs full sunlight.",
         "Watering: Water regularly.",
@@ -26,7 +25,6 @@ tips = {
         "Fertilizer: Nitrogen-rich fertilizer.",
         "Harvest: Ready in 70-90 days."
     ],
-
     "Coriander": [
         "Sunlight: Moderate sunlight.",
         "Watering: Light watering daily.",
@@ -34,7 +32,6 @@ tips = {
         "Fertilizer: Organic compost recommended.",
         "Harvest: Ready in 30-40 days."
     ],
-
     "Spinach": [
         "Sunlight: Partial sunlight.",
         "Watering: Keep soil moist.",
@@ -44,6 +41,7 @@ tips = {
     ]
 }
 
+# Wikipedia links
 wiki_links = {
     "Tomato": "https://en.wikipedia.org/wiki/Tomato",
     "Mint": "https://en.wikipedia.org/wiki/Mint",
@@ -52,39 +50,55 @@ wiki_links = {
     "Spinach": "https://en.wikipedia.org/wiki/Spinach"
 }
 
+# Plant images in static/images/
+plant_images = {
+    "Tomato": "tomato.jpg",
+    "Mint": "mint.jpg",
+    "Chili": "chili.jpg",
+    "Coriander": "coriander.jpg",
+    "Spinach": "spinach.jpg"
+}
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-
     plant = None
     tip = None
     index = 0
     end = False
     wiki = None
+    image = None
 
     if request.method == "POST":
-
-        plant = request.form["plant"]
+        plant = request.form.get("plant")
         index = int(request.form.get("index", 0))
 
         plant_tips = tips.get(plant, [])
 
+        # Prevent negative index
+        if index < 0:
+            index = 0
+
+        # Show tip if available
         if index < len(plant_tips):
             tip = plant_tips[index]
         else:
             end = True
 
         wiki = wiki_links.get(plant)
+        image = plant_images.get(plant)
 
-        index += 1
+        index += 1  # Prepare next tip index
 
-    return render_template("index.html",
-                           plant=plant,
-                           tip=tip,
-                           index=index,
-                           end=end,
-                           wiki=wiki)
-
+    return render_template(
+        "index.html",
+        plant=plant,
+        tip=tip,
+        index=index,
+        end=end,
+        wiki=wiki,
+        image=image,
+        tips=tips  # Pass tips for dropdown
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Home Gardening Assistant</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -10,68 +12,57 @@
 
 <div class="container">
 
-<h1>🌱 AI Home Gardening Assistant</h1>
+    <h1>🌱 AI Home Gardening Assistant</h1>
 
-<form method="POST">
+    <form method="POST" class="form-select">
+        <label>Select Plant</label><br><br>
+        <select name="plant" onchange="this.form.submit()">
+            <option value="" disabled selected>-- Choose a plant --</option>
+            {% for p in tips.keys() %}
+            <option value="{{ p }}" {% if plant == p %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="index" value="0">
+    </form>
 
-<label>Select Plant</label><br><br>
+    {% if image %}
+    <div class="plant-image">
+        <img src="{{ url_for('static', filename='images/' + image) }}" alt="{{ plant }}">
+    </div>
+    {% endif %}
 
-<select name="plant">
-<option value="Tomato">Tomato</option>
-<option value="Mint">Mint</option>
-<option value="Chili">Chili</option>
-<option value="Coriander">Coriander</option>
-<option value="Spinach">Spinach</option>
-</select>
+    {% if tip %}
+    <div class="result">
+        <h3>🌿 Tip</h3>
+        <p>{{ tip }}</p>
 
-<input type="hidden" name="index" value="0">
+        <div class="nav-buttons">
+            <!-- Previous Tip -->
+            {% if index > 1 %}
+            <form method="POST">
+                <input type="hidden" name="plant" value="{{ plant }}">
+                <input type="hidden" name="index" value="{{ index-2 }}">
+                <button type="submit">⬅ Previous</button>
+            </form>
+            {% endif %}
 
-<br><br>
+            <!-- Next Tip -->
+            <form method="POST">
+                <input type="hidden" name="plant" value="{{ plant }}">
+                <input type="hidden" name="index" value="{{ index }}">
+                <button type="submit">Next ➡</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
 
-<button type="submit">Next Tip ➡</button>
-
-</form>
-
-
-{% if tip %}
-
-<div class="result">
-
-<h3>🌿 Tip</h3>
-
-<p>{{ tip }}</p>
-
-<div style="display:flex; justify-content:center; gap:20px;">
-
-<!-- Previous Tip -->
-<form method="POST">
-<input type="hidden" name="plant" value="{{ plant }}">
-<input type="hidden" name="index" value="{{ index-2 }}">
-<button type="submit">⬅ Previous</button>
-</form>
-
-<!-- Next Tip -->
-<form method="POST">
-<input type="hidden" name="plant" value="{{ plant }}">
-<input type="hidden" name="index" value="{{ index }}">
-<button type="submit">Next ➡</button>
-</form>
-
-</div>
-
-</div>
-
-{% endif %}
-
-
-{% if end %}
-
-<h3>✅ You have viewed all the basic gardening tips for this plant.</h3>
-
-<p>For more information visit:</p>
-<a href="{{ wiki }}" target="_blank">📚 Learn More on Wikipedia</a>
-
-{% endif %}
+    {% if end %}
+    <div class="end-tip">
+        <h3>✅ You have viewed all tips for {{ plant }}.</h3>
+        <p>For more information visit:</p>
+        <a href="{{ wiki }}" target="_blank">📚 Learn More on Wikipedia</a>
+    </div>
+    {% endif %}
 
 </div>
 
