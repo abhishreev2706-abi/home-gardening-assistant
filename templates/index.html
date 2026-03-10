@@ -2,15 +2,18 @@
 <html>
 <head>
 <title>AI-Based Home Gardening Assistant</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<h1>AI-Based Home Gardening Assistant</h1>
+<div class="container">
+
+<h1>🌱 AI Home Gardening Assistant</h1>
 
 <form method="POST">
 
-<label>Select a Plant:</label>
+<label>Select a Plant</label><br>
 
 <select name="plant">
 <option>Tomato</option>
@@ -20,13 +23,17 @@
 <option>Spinach</option>
 </select>
 
-<br><br>
+<br>
 
 <button type="submit">Generate Tips</button>
 
 </form>
 
-<h2>{{ result }}</h2>
+<div class="result">
+{{ result }}
+</div>
+
+</div>
 
 </body>
 </html>
