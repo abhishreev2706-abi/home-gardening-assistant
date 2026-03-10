@@ -1,70 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Home Gardening Assistant</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
 
 <div class="container">
 
     <h1>🌱 AI Home Gardening Assistant</h1>
 
-    <form method="POST" class="form-select">
+    <!-- Plant Selector -->
+    <div class="form-select">
         <label>Select Plant</label><br><br>
-        <select name="plant" onchange="this.form.submit()">
-            <option value="" disabled selected>-- Choose a plant --</option>
+        <select id="plant-select">
+            <option value="" disabled selected>Select a plant</option>
             {% for p in tips.keys() %}
-            <option value="{{ p }}" {% if plant == p %}selected{% endif %}>{{ p }}</option>
+                <option value="{{ p }}">{{ p }}</option>
             {% endfor %}
         </select>
-        <input type="hidden" name="index" value="0">
-    </form>
+    </div>
 
-    {% if image %}
+    <!-- Plant Image -->
     <div class="plant-image">
-        <img src="{{ url_for('static', filename='images/' + image) }}" alt="{{ plant }}">
+        <img id="plant-img" src="" alt="">
     </div>
-    {% endif %}
 
-    {% if tip %}
-    <div class="result">
+    <!-- Tip Card -->
+    <div class="result" id="tip-card">
         <h3>🌿 Tip</h3>
-        <p>{{ tip }}</p>
-
-        <div class="nav-buttons">
-            <!-- Previous Tip -->
-            {% if index > 1 %}
-            <form method="POST">
-                <input type="hidden" name="plant" value="{{ plant }}">
-                <input type="hidden" name="index" value="{{ index-2 }}">
-                <button type="submit">⬅ Previous</button>
-            </form>
-            {% endif %}
-
-            <!-- Next Tip -->
-            <form method="POST">
-                <input type="hidden" name="plant" value="{{ plant }}">
-                <input type="hidden" name="index" value="{{ index }}">
-                <button type="submit">Next ➡</button>
-            </form>
-        </div>
+        <p id="tip-text">Select a plant to see tips.</p>
+        <p id="wiki-link" style="margin-top:10px;"></p>
     </div>
-    {% endif %}
 
-    {% if end %}
-    <div class="end-tip">
-        <h3>✅ You have viewed all tips for {{ plant }}.</h3>
-        <p>For more information visit:</p>
-        <a href="{{ wiki }}" target="_blank">📚 Learn More on Wikipedia</a>
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+        <button id="prev-btn" disabled>🍀 Previous</button> 
+        <button id="next-btn">Next ➡</button>
     </div>
-    {% endif %}
+
+    <input type="hidden" id="tip-index" value="0">
 
 </div>
+
+<script>
+const nextBtn = document.getElementById("next-btn");
+const prevBtn = document.getElementById("prev-btn");
+const tipText = document.getElementById("tip-text");
+const plantImg = document.getElementById("plant-img");
+const plantSelect = document.getElementById("plant-select");
+const tipIndexInput = document.getElementById("tip-index");
+const wikiLink = document.getElementById("wiki-link");
+
+let currentTipIndex = 0;
+
+// Fetch tip via AJAX
+function fetchTip(change = 0, reset=false) {
+    if (!plantSelect.value) return;
+
+    let index;
+    if (reset) {
+        index = 0;
+    } else if (change < 0) {
+        index = currentTipIndex + change;
+        if (index < 0) index = 0;
+    } else {
+        index = currentTipIndex;
+    }
+
+    const formData = new FormData();
+    formData.append("plant", plantSelect.value);
+    formData.append("index", index);
+
+    fetch("/get_tip", { method: "POST", body: formData })
+        .then(res => res.json())
+        .then(data => {
+            tipText.innerText = data.tip;
+            currentTipIndex = data.index;  // server's next index
+            tipIndexInput.value = currentTipIndex;
+
+            if (data.image) plantImg.src = "/static/images/" + data.image;
+
+            // Handle Wiki link
+            if (data.end) {
+                wikiLink.innerHTML = `For more info: <a href="${data.wiki}" target="_blank">📚 Learn on Wikipedia</a>`;
+                nextBtn.disabled = true;
+            } else {
+                wikiLink.innerHTML = "";
+                nextBtn.disabled = false;
+            }
+
+            // Disable Previous if at first tip
+            prevBtn.disabled = (currentTipIndex <= 1);
+        })
+        .catch(err => console.error(err));
+}
+
+// Button Events
+nextBtn.addEventListener("click", () => fetchTip(1));
+prevBtn.addEventListener("click", () => fetchTip(-1));
+
+// Change plant resets index
+plantSelect.addEventListener("change", () => fetchTip(0, true));
+</script>
 
 </body>
 </html>

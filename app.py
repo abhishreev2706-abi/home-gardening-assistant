@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
@@ -50,7 +50,7 @@ wiki_links = {
     "Spinach": "https://en.wikipedia.org/wiki/Spinach"
 }
 
-# Plant images in static/images/
+# Plant images
 plant_images = {
     "Tomato": "tomato.jpg",
     "Mint": "mint.jpg",
@@ -64,41 +64,55 @@ def home():
     plant = None
     tip = None
     index = 0
-    end = False
-    wiki = None
     image = None
 
     if request.method == "POST":
         plant = request.form.get("plant")
         index = int(request.form.get("index", 0))
-
         plant_tips = tips.get(plant, [])
-
-        # Prevent negative index
-        if index < 0:
-            index = 0
-
-        # Show tip if available
         if index < len(plant_tips):
             tip = plant_tips[index]
-        else:
-            end = True
-
-        wiki = wiki_links.get(plant)
         image = plant_images.get(plant)
-
-        index += 1  # Prepare next tip index
+        index += 1  # next tip
 
     return render_template(
         "index.html",
         plant=plant,
         tip=tip,
         index=index,
-        end=end,
-        wiki=wiki,
+        tips=tips,
         image=image,
-        tips=tips  # Pass tips for dropdown
+        wiki_links=wiki_links
     )
+
+# AJAX route for Next/Previous tips
+@app.route("/get_tip", methods=["POST"])
+def get_tip():
+    plant = request.form.get("plant")
+    index = int(request.form.get("index", 0))
+    plant_tips = tips.get(plant, [])
+    wiki = wiki_links.get(plant)
+
+    # Prevent out-of-bounds
+    if index < 0:
+        index = 0
+    if index >= len(plant_tips):
+        tip = "✅ You have viewed all tips for this plant."
+        end = True
+    else:
+        tip = plant_tips[index]
+        end = False
+
+    image = plant_images.get(plant)
+
+    return jsonify({
+        "tip": tip,
+        "index": index + 1,  # next index
+        "end": end,
+        "image": image,
+        "wiki": wiki
+    })
+
 
 if __name__ == "__main__":
     app.run(debug=True)
